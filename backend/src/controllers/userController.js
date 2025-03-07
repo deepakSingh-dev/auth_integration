@@ -5,7 +5,7 @@ import catchAsync from "#src/utils/catchAsync.js";
  * Update User Details (e.g., name)
  */
 const updateUser = catchAsync(async (req, res) => {
-  const userId = req.user.id; // Assuming authentication middleware sets req.user
+  const userId = req.user.id; 
 
   const { name, email, phone } = req.body; // Add other user-related fields as needed
 

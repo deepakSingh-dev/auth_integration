@@ -4,6 +4,14 @@ import dotenv from "dotenv";
 import connectDB from "./utils/db.js";
 import authRoutes from "./routes/auth.js";
 import cors from "cors";
+import client from "prom-client";
+
+const httpRequestDurationSeconds = new client.Histogram({
+  name: "http_request_duration_seconds",
+  help: "Duration of HTTP requests in seconds",
+  labelNames: ["method", "route", "code"],
+  buckets: [0.1, 0.5, 1, 2, 5],
+});
 
 dotenv.config();
 connectDB();

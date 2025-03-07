@@ -21,7 +21,6 @@ export async function handleApiRequest(
       ...(token && { Authorization: `Bearer ${token}` }),
     };
 
-    // Only set 'Content-Type' to json if the body is not a FormData object
     if (!(body instanceof FormData)) {
       headers["Content-Type"] = "application/json";
     }
@@ -38,7 +37,6 @@ export async function handleApiRequest(
       }),
     };
 
-    // Add Next.js specific options when on server
     if (cache) {
       fetchOptions.cache = cache;
     }
@@ -55,60 +53,49 @@ export async function handleApiRequest(
       };
     }
 
-    const response = await fetch(`${BASE_URL}${endpoint}`, fetchOptions);
+    const apiUrl = `${BASE_URL}${endpoint}`;
+    const response = await fetch(apiUrl, fetchOptions);
 
     if (!response.ok) {
-      const res = await response.json() || null 
-      throw new Error(res?.message || response.statusText);
+      // Log the full response when there is an error
+      const errorText = await response.text();
+      console.error(`API Error (${method} ${endpoint}):`, errorText);
+      throw new Error(`API Request Failed: ${response.status} - ${response.statusText}`);
     }
 
-    // Detect response type based on content type header
+    // Detect response type based on content-type header
     const contentType = response.headers.get("Content-Type");
 
     let data;
     if (contentType?.includes("application/json")) {
       data = await response.json();
-    } else if (contentType?.includes("application/pdf") || contentType?.includes("image/")) {
-      const pdf_data = await response.blob(); // Handles binary data such as PDF or images
-      data = {
-        data: pdf_data,
-        response
-      }
+    } else if (
+      contentType?.includes("application/pdf") ||
+      contentType?.includes("image/")
+    ) {
+      const fileData = await response.blob();
+      data = { data: fileData, response };
     } else if (contentType?.includes("text/csv")) {
-      const csv_data = await response.blob();
-      data = {
-        data: csv_data,
-        response
-      }
+      const csvData = await response.blob();
+      data = { data: csvData, response };
     } else if (contentType?.includes("text/")) {
-      // Handle text content types
       const text = await response.text();
-      data = {
-        data: text,
-        response
-      }
+      data = { data: text, response };
     } else {
-      // For unknown content types, try blob first, fallback to text
       try {
         const blob = await response.clone().blob();
-        data = {
-          data: blob,
-          response
-        }
+        data = { data: blob, response };
       } catch {
         const text = await response.text();
-        data = {
-          data: text,
-          response
-        }
+        data = { data: text, response };
       }
     }
 
-    if (debug) console.log("API Response:", data);
+    if (debug) console.log(" API Response Data:", data);
 
-    return data; // Include raw response object
+    return data;
   } catch (error) {
-    console.error(`API Error (${method} ${endpoint}):`, error);
-    throw new Error(error.message || "An error occurred while fetching data.");
+    console.error(`API Error (${method} ${endpoint}):`, error.message);
+    throw error;
   }
 }

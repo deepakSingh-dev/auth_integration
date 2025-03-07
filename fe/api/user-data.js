@@ -14,10 +14,12 @@ export const resetPassApi = async (data) => {
   });
 };
 
-export const getUser = async (email) => {
+export const getUser = async (token) => {
   const endpoint = "/api/auth/getUser";
-  return handleApiRequest("POST", endpoint, { body: { email } });
 
+  return handleApiRequest("POST", endpoint, {
+    token,
+  });
 };
 
 export async function createUser(name, email, password) {

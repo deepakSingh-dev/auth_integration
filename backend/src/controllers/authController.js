@@ -1,4 +1,3 @@
-// src/controllers/authController.js
 import bcrypt from "bcryptjs";
 import crypto from "crypto";
 import jwt from "jsonwebtoken";
@@ -9,7 +8,6 @@ import catchAsync from "#src/utils/catchAsync.js";
 
 const register = async (req, res) => {
   const { name, email, password, role = "viewer" } = req.body;
-  // console.log(req.body);
   try {
     const userExists = await User.findOne({ email });
 
@@ -41,7 +39,6 @@ const login = async (req, res) => {
     }
 
     const { token, refreshToken } = generateTokens(user);
-    // console.log("logging in", user);
 
     res.json({
       token,
@@ -86,14 +83,12 @@ const getProfile = async (req, res) => {
   try {
     const { email } = req.body;
 
-    // Find the user by email
     const user = await User.findOne({ email }).select("-password");
 
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
 
-    // Return the user details
     res.status(200).json(user);
   } catch (error) {
     console.error(error);

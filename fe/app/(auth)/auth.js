@@ -30,7 +30,9 @@ export const {
             console.error("Failed to fetch user:", response.statusText);
             return null;
           }
-    
+          if (!user) {
+            throw new Error("User not found.");
+          }
           const { user, token, refreshToken } = await response.json();
           return { user, token, refreshToken };
         } catch (error) {
